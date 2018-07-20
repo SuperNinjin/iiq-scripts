@@ -1,0 +1,33 @@
+---
+
+- name: Install the latest version of packages
+  yum:
+    name: "{{item}}"
+    state: latest
+  with_items:
+   - java-devel
+
+- name: Copy iiq war to host
+  copy:
+    src: /etc/ansible/Distr/identityiq.war
+    dest: /opt/identityiq.war
+    mode: 0755
+    
+- name: Create iiq folder
+  file:
+    path: /opt/identityiq
+    state: directory    
+    
+- name: Unpack iiq
+  shell: "jar -xvf /opt/identityiq.war"
+  args:
+   chdir: /opt/identityiq
+ 
+- name: Stop Tomcat
+  service: name=tomcat state=stopped
+
+- name: Copy iiq folder
+  command: cp -rf /opt/identityiq /usr/share/tomcat/webapps/identityiq
+  
+- name: Start Tomcat
+  service: name=tomcat state=started

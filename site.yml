@@ -1,0 +1,13 @@
+---
+- hosts: iiq-servers
+  remote_user: root
+  become: yes
+  become_method: sudo
+
+  roles:
+    - selinux
+    - tomcat
+    - haproxy
+    - mysql
+    - deploy_war
+    - configure_iiq

@@ -1,0 +1,15 @@
+---
+
+- name: Import tables
+  shell: mysql -u{{mysql_root_username}} -p{{mysql_root_password}} < /usr/share/tomcat/webapps/identityiq/WEB-INF/database/create_identityiq_tables-7.2.mysql
+  ignore_errors: yes
+  
+- name: Set database host
+  shell: sed -ri -e "s/mysql:\/\/localhost/mysql:\/\/127.0.0.1:3306/" /usr/share/tomcat/webapps/identityiq/WEB-INF/classes/iiq.properties
+  
+- name: Set user host
+  shell: sed -ri -e "s/dataSource.username\=.*/dataSource.username=identityiq/" /usr/share/tomcat/webapps/identityiq/WEB-INF/classes/iiq.properties
+  
+#TODO: CRYPTED PASSWORD
+- name: Set password host
+  shell: sed -ri -e "s/dataSource.password\=.*/dataSource.password=identityiq/" /usr/share/tomcat/webapps/identityiq/WEB-INF/classes/iiq.properties

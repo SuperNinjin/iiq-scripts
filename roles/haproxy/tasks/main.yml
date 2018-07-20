@@ -1,0 +1,54 @@
+---
+
+- name: Install the latest version of packages
+  yum:
+    name: "{{item}}"
+    state: latest
+  with_items:
+   - git
+   - wget
+   - socat
+
+- name: Install the 'Development tools' package group
+  yum:
+    name: "@Development tools"
+    state: present    
+
+- name: Check if build directory exists
+  stat:
+    path: /opt/rpm-haproxy
+  register: hadir
+    
+- name: Get HaProxy RPM SPECs and shit
+  command: git clone https://github.com/DBezemer/rpm-haproxy.git 
+  args:
+    chdir: /opt/
+  when: not hadir.stat.exists
+
+- name: Switch to HaProxy verson 1.8
+  command: git checkout 1.8
+  args:
+    chdir: /opt/rpm-haproxy/
+  when: not hadir.stat.exists
+    
+- name: Build da shit!
+  command: make
+  args:
+    chdir: /opt/rpm-haproxy/    
+  when: not hadir.stat.exists
+ 
+#- name: Install HaProxy package.
+#  yum:
+#     name: /opt/rpm-haproxy/rpmbuild/RPMS/x86_64/*.rpm   
+     
+- name: Install HaProxy package.
+  command: rpm -ivh /opt/rpm-haproxy/rpmbuild/RPMS/x86_64/*.rpm     
+  ignore_errors: yes
+  
+- name: Copy config HaProxy
+  template:
+    src: "haproxy.cfg"
+    dest: "/etc/haproxy.cfg"
+    
+- name: Start HaProxy
+  service: name=haproxy state=started enabled=yes
